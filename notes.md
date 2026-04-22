@@ -46,6 +46,12 @@
 - [x] 可观测性: OpenTelemetry + Prometheus + Grafana, 分阶段实施
 - [x] 国际化: 初期中文,代码层面做好i18n准备,react-i18next
 
+### 第五轮: 深度技术探索
+- [x] 文件存储方案: Apache Arrow + DuckDB-WASM浏览器端数据库可行性分析
+- [x] 飞书多维表格Rust引擎: 确认使用Rust公式运算引擎+内存视图引擎+MPP
+- [x] 自动保存机制: 三层策略(内存→本地Debounce→服务端异步TransactionQueue)
+- [x] Local-First架构: DuckDB-WASM + IndexedDB/OPFS + CRDT同步的可行性
+
 ## 已形成结论的技术决策
 
 | 决策领域 | 结论 | 依据 |
