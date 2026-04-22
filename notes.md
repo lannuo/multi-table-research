@@ -120,7 +120,11 @@ multi-table-research/
 │   ├── automation-workflow.md                  # 自动化工作流引擎
 │   ├── plugin-extension-system.md              # 插件/扩展系统
 │   ├── mobile-adaptation.md                    # 移动端适配方案
-│   └── ai-integration.md                       # AI能力集成
+│   ├── ai-integration.md                       # AI能力集成
+│   ├── filter-system.md                        # 数据筛选系统设计
+│   ├── field-type-system.md                    # 字段类型系统(含自定义字段)
+│   ├── template-system-design.md               # 模板体系设计(产品对比)
+│   └── scenario-templates.md                   # 场景化模板设计(6大场景)
 │
 ├── tech-architecture/
 │   ├── notion-architecture.md                  # Notion架构概览
