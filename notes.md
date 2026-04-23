@@ -149,13 +149,14 @@ multi-table-research/
 │   ├── ot-implementation-detail.md             # OT算法实现详解(Transform函数/APITable源码分析/光标协议/WebSocket协议/离线编辑/服务端架构)
 │   ├── canvas-rendering-detail.md              # Canvas渲染引擎深度研究(APITable Konva源码/渲染管线/编辑器覆盖层/虚拟滚动/命中测试)
 │   ├── auth-security-detail.md                 # 认证授权与安全设计(JWT/RLS/OWASP/加密/审计日志/分享安全)
-│   └── automation-engine-detail.md             # 自动化引擎实现(n8n架构/BullMQ调度/错误重试/脚本沙箱/Temporal对比)
-
+│   ├── automation-engine-detail.md             # 自动化引擎实现(n8n架构/BullMQ调度/错误重试/脚本沙箱/Temporal对比)
+│   └── rust-engine-autosave.md                # 飞书Rust引擎 & 自动保存机制
 │
 ├── data-storage/
 │   ├── data-model-design.md                    # 数据模型设计(深度分析)
 │   ├── apitable-snapshot-data-structure.md     # APITable Snapshot数据结构
-│   └── database-schema-detail.md               # 数据库Schema完整性(用户表/分区/乐观锁/迁移/索引生命周期/关联字段)
+│   ├── database-schema-detail.md               # 数据库Schema完整性(用户表/分区/乐观锁/迁移/索引生命周期/关联字段)
+│   └── file-based-arrow-storage.md             # 文件存储方案 & Apache Arrow/DuckDB-WASM技术路线
 │
 └── open-source-projects/
     ├── open-source-comparison.md               # 开源项目对比
