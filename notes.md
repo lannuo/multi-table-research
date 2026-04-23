@@ -81,6 +81,7 @@
 - OT算法的具体Transform函数设计
 - 安全审计(OWASP)专项
 - 无障碍(a11y)设计
+- Rust生态系统深度评估（已有初版，见 rust-ecosystem-research.md，已新增 Web 框架深度对比）
 
 ## 核心架构总览
 ```
@@ -150,7 +151,8 @@ multi-table-research/
 │   ├── canvas-rendering-detail.md              # Canvas渲染引擎深度研究(APITable Konva源码/渲染管线/编辑器覆盖层/虚拟滚动/命中测试)
 │   ├── auth-security-detail.md                 # 认证授权与安全设计(JWT/RLS/OWASP/加密/审计日志/分享安全)
 │   ├── automation-engine-detail.md             # 自动化引擎实现(n8n架构/BullMQ调度/错误重试/脚本沙箱/Temporal对比)
-│   └── rust-engine-autosave.md                # 飞书Rust引擎 & 自动保存机制
+│   ├── rust-engine-autosave.md                # 飞书Rust引擎 & 自动保存机制
+│   └── rust-ecosystem-research.md             # Rust生态系统调研(JSONB/OT/CRDT/WASM公式引擎/Web框架深度对比/Axum vs Actix vs Rocket vs Warp/NestJS对比)
 │
 ├── data-storage/
 │   ├── data-model-design.md                    # 数据模型设计(深度分析)
