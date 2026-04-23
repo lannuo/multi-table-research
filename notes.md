@@ -14,7 +14,7 @@
 - [x] Notion Block模型详解（官方博客全文整理）
 - [x] 飞书多维表格产品功能梳理
 - [x] 实时协作方案: CRDT(Yjs/Automerge) vs OT
-- [x] 公式引擎: HyperFormula(推荐)
+- [x] 公式引擎: ~~HyperFormula(推荐)~~ → Formualizer(Rust+WASM, MIT/Apache-2.0) -- HyperFormula实为GPLv3，已更正
 - [x] 前端性能: 虚拟滚动 + Canvas + Web Workers
 - [x] 数据存储方案: PostgreSQL + JSONB 分层架构
 - [x] APITable Snapshot 数据结构详解
@@ -51,14 +51,15 @@
 - [x] 飞书多维表格Rust引擎: 确认使用Rust公式运算引擎+内存视图引擎+MPP
 - [x] 自动保存机制: 三层策略(内存→本地Debounce→服务端异步TransactionQueue)
 - [x] Local-First架构: DuckDB-WASM + IndexedDB/OPFS + CRDT同步的可行性
+- [x] CRDT vs OT 深度研究: 评估从OT切换到CRDT(Yjs+Yrs)的可行性，建议切换
 
 ## 已形成结论的技术决策
 
 | 决策领域 | 结论 | 依据 |
 |---------|------|------|
 | 数据模型 | PostgreSQL + JSONB 分层架构 | 用户自定义字段 + 分析需求平衡 |
-| 实时协作 | OT(参考APITable) | 成熟方案，APITable已验证 |
-| 公式引擎 | HyperFormula | MIT许可，400+公式 |
+| 实时协作 | CRDT(Yjs+Yrs)，Rust协作服务 | Rust无成熟OT库，Yrs生产验证(AppFlowy)，离线支持好 |
+| 公式引擎 | Formualizer (Rust+WASM) | MIT/Apache-2.0许可，320+公式，替代HyperFormula(实为GPLv3) |
 | 前端技术 | React + Next.js | APITable同方案，生态丰富 |
 | 后端技术 | NestJS (TypeScript) | 前后端统一语言，结构化强 |
 | 搜索 | PG原生→Meilisearch分阶段 | stringify字段+GIN索引起步 |
@@ -78,30 +79,31 @@
 所有计划内方向均已覆盖。后续可按需深入:
 - 具体的数据库Schema DDL设计
 - 前端Canvas渲染引擎的详细实现
-- OT算法的具体Transform函数设计
+- CRDT(Yjs+Yrs)的具体集成实现与PoC验证
 - 安全审计(OWASP)专项
 - 无障碍(a11y)设计
 - Rust生态系统深度评估（已有初版，见 rust-ecosystem-research.md，已新增 Web 框架深度对比）
+- Yjs文档模型与PostgreSQL持久化方案的详细设计
 
 ## 核心架构总览
 ```
 ┌──────────── 前端 ────────────┐
 │  React + Next.js             │
 │  Canvas表格渲染 / 虚拟滚动    │
-│  HyperFormula公式引擎         │
-│  OT客户端                     │
+│  Formualizer公式引擎(WASM)    │
+│  Yjs CRDT客户端              │
 ├──────────── API层 ───────────┤
-│  NestJS (TypeScript)         │
-│  OT服务器 / WebSocket        │
+│  Rust (Axum + Yrs) 协作服务  │
+│  NestJS (TypeScript) 业务API │
 │  自动化工作流引擎             │
 │  Webhook推送                  │
 ├──────────── 数据层 ───────────┤
 │  PostgreSQL (JSONB)          │
 │  ├── 元数据 (tables/fields)  │
 │  ├── 记录 (records+data)     │
-│  ├── 协作 (changesets)       │
+│  ├── 协作 (CRDT更新+快照)    │
 │  └── 分区 / Citus扩展        │
-│  Redis (缓存+队列)           │
+│  Redis (缓存+队列+活跃文档)   │
 ├──────────── 可选扩展 ─────────┤
 │  Meilisearch (全文搜索)       │
 │  ClickHouse (OLAP分析)       │
@@ -153,6 +155,8 @@ multi-table-research/
 │   ├── automation-engine-detail.md             # 自动化引擎实现(n8n架构/BullMQ调度/错误重试/脚本沙箱/Temporal对比)
 │   ├── rust-engine-autosave.md                # 飞书Rust引擎 & 自动保存机制
 │   └── rust-ecosystem-research.md             # Rust生态系统调研(JSONB/OT/CRDT/WASM公式引擎/Web框架深度对比/Axum vs Actix vs Rocket vs Warp/NestJS对比)
+│   └── crdt-vs-ot-deep-research.md            # CRDT vs OT深度研究(结构化数据对比/Yjs-Yrs表格模型/Figma-AppFlowy案例/冲突解决/Rust集成/迁移路径/最终建议)
+│   └── rust-formula-engine-research.md       # Rust公式引擎深度调研(Formualizer/IronCalc/WASM可行性/HyperFormula许可证更正)
 │
 ├── data-storage/
 │   ├── data-model-design.md                    # 数据模型设计(深度分析)
