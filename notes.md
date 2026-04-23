@@ -135,7 +135,8 @@ multi-table-research/
 │   ├── formula-engine.md                       # 公式引擎方案
 │   ├── frontend-performance.md                 # 前端性能优化
 │   ├── import-export.md                        # 导入导出方案
-│   ├── search-engine.md                        # 搜索引擎方案
+│   ├── search-engine.md                        # 搜索引擎方案(概览)
+│   ├── search-engine-detail.md                 # 搜索引擎实现深度研究(中文全文搜索/Meilisearch/索引同步/分面搜索/跨表搜索/API设计)
 │   ├── version-control-undo-redo.md            # 版本控制与撤销重做
 │   ├── webhook-event-system.md                 # Webhook与事件系统
 │   ├── tech-stack-selection.md                 # 技术选型方案
@@ -144,11 +145,17 @@ multi-table-research/
 │   ├── design-system-selection.md              # 前端组件库选型
 │   ├── testing-strategy.md                     # 测试策略
 │   ├── observability-monitoring.md             # 监控与可观测性
-│   └── i18n.md                                 # 国际化方案
+│   ├── i18n.md                                 # 国际化方案
+│   ├── ot-implementation-detail.md             # OT算法实现详解(Transform函数/APITable源码分析/光标协议/WebSocket协议/离线编辑/服务端架构)
+│   ├── canvas-rendering-detail.md              # Canvas渲染引擎深度研究(APITable Konva源码/渲染管线/编辑器覆盖层/虚拟滚动/命中测试)
+│   ├── auth-security-detail.md                 # 认证授权与安全设计(JWT/RLS/OWASP/加密/审计日志/分享安全)
+│   └── automation-engine-detail.md             # 自动化引擎实现(n8n架构/BullMQ调度/错误重试/脚本沙箱/Temporal对比)
+
 │
 ├── data-storage/
 │   ├── data-model-design.md                    # 数据模型设计(深度分析)
-│   └── apitable-snapshot-data-structure.md     # APITable Snapshot数据结构
+│   ├── apitable-snapshot-data-structure.md     # APITable Snapshot数据结构
+│   └── database-schema-detail.md               # 数据库Schema完整性(用户表/分区/乐观锁/迁移/索引生命周期/关联字段)
 │
 └── open-source-projects/
     ├── open-source-comparison.md               # 开源项目对比
