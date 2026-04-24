@@ -67,36 +67,60 @@
 
 ## 已形成结论的技术决策
 
-> **重要**: 以下决策经过多轮深度技术调研后于 2026-04-24 更新。最新变更（决策三）：CRDT 从 Yrs 改为 Loro，存储从 SQLite 改为 PostgreSQL + S3。详见 `tech-architecture/architecture-decision-2026-04.md`。
+> **2026-04-24 最终更新**：经竞品深度调研（Teable/Baserow/NocoDB/Grist）、飞书架构深挖、Canvas PoC 验证、社区性能数据分析、以及四项决策分析（Make vs Buy / CRDT / 后端语言 / 公式引擎），得出以下结论。核心变更：后端从 Rust 回到 **NestJS (TypeScript)**，数据存储确定为 **PostgreSQL JSONB 混合模型**。详见 `tech-architecture/` 下的 4 个 decision-*.md。
 
 | 决策领域 | 结论 | 依据 |
 |---------|------|------|
-| 数据存储 | **Loro CRDT + PostgreSQL + S3** | Loro 是数据 source of truth，PG 存快照/操作日志/关系型元数据，S3 存附件；服务端 PG 生产验证优于 SQLite |
-| 实时协作 | **Loro CRDT** | Map 操作比 Yjs 快 65x，原生 MovableList 支持行列拖拽，Shallow Snapshot 内存优化，Eg-walker 算法 |
-| 公式引擎 | Formualizer (Rust+WASM) | MIT/Apache-2.0许可，320+公式；前端 WASM + 后端原生 Rust 直调 |
-| 前端技术 | React + Next.js + loro-extended/react | 生态丰富，Canvas 自研表格渲染，loro-extended 提供 useDocument/useValue/usePresence Hooks |
-| **后端技术** | **纯 Rust (Axum)** | 统一语言（协作+API+公式），单二进制部署，消除 TS/Rust 双栈维护成本 |
-| 搜索 | **PG tsvector + pg_jieba** | PostgreSQL 原生全文搜索，pg_jieba 中文分词，后续可加 Meilisearch |
-| 版本控制 | **Loro Git-like DAG** | 内建版本 DAG，Shallow Snapshot 压缩旧历史，无需自建快照轮转 |
-| 自动化 | Trigger→Action 事件驱动 | 比轮询实时性好 |
-| 权限 | **PG RLS + 应用层 RBAC** | PostgreSQL 行级安全策略 + Axum 中间件双层权限 |
-| 部署 | **Docker Compose (Axum + PG + MinIO)** | 一键部署，PG 提供成熟运维工具链 |
-| 扩展 | PG 读写分离 → Citus 水平扩展 | PostgreSQL 生态成熟，按需横向扩展 |
+| 数据存储 | **PostgreSQL JSONB 混合模型** | 核心字段物理列 + 动态字段 JSONB + GIN 索引；MVP 灵活迭代，百万行后物理化高频字段 |
+| 实时协作 | **Loro CRDT** | Map 快 65x，原生 MovableList（行列拖拽），Shallow Snapshot（内存优化），Git-like DAG（版本历史），loro-extended 节省 2K+ 行胶水代码 |
+| 公式引擎 | **Formualizer (Rust+WASM)** | MIT/Apache-2.0，320+ 公式，依赖图增量重算；v0.3 需接受早期风险 |
+| 前端技术 | React + Next.js + Canvas 渲染 | Canvas PoC 已验证（60FPS@10万行, 10MB@20万行×100列）；loro-extended/react 提供 Hooks |
+| **后端技术** | **NestJS (TypeScript)** | Solo 开发效率优先；Teable 验证了 NestJS+PG 可支撑商业级多维表格；公式引擎 WASM 前端计算解耦 |
+| 搜索 | PG tsvector + pg_jieba | PostgreSQL 原生全文搜索，中文分词 |
+| 版本控制 | Loro Git-like DAG | 内建，无需自建 |
+| 自动化 | Trigger→Action 事件驱动 | NestJS + BullMQ |
+| 权限 | 应用层 RBAC + PG RLS | 双层权限 |
+| 部署 | Docker Compose (NestJS + PG + MinIO) | 3 容器，简单部署 |
+| 扩展 | PG 读写分离 → Citus 水平扩展 | PostgreSQL 生态 |
 | API | RESTful + WebSocket | REST 业务 API + WebSocket Loro 同步 |
-| UI组件 | Ant Design | 200+组件,企业级；表格自研 Canvas |
+| UI组件 | Ant Design | 200+组件；表格自研 Canvas |
 | 测试 | Vitest + Playwright | 金字塔策略 |
 | 监控 | OTel + Prometheus + Grafana | 分阶段引入 |
-| AI | 云端 LLM API 起步 | 后期可本地部署 |
+| AI | 云端 LLM API | 后期可本地部署 |
 | 国际化 | react-i18next | 初期中文 |
 
-## 全部研究方向已完成 ✓
-所有计划内方向均已覆盖。后续可按需深入:
+## 核心架构总览
+
+```
+┌────────────── 前端 ────────────────────┐
+│  React + Next.js                       │
+│  Canvas 表格渲染 (PoC 已验证)           │
+│  Formualizer 公式引擎 (WASM)            │
+│  Loro CRDT + loro-extended/react        │
+├────────────── 后端 ────────────────────┤
+│  NestJS (TypeScript) — 统一后端         │
+│  ├── REST API（用户/权限/元数据/文件）   │
+│  ├── WebSocket（Loro CRDT 同步）        │
+│  ├── BullMQ 任务队列                    │
+│  └── 自动化工作流引擎                   │
+├────────────── 数据层 ──────────────────┤
+│  PostgreSQL（主存储）                   │
+│  ├── 关系表 + JSONB 动态字段 (混合模型) │
+│  ├── GIN 索引 (jsonb_path_ops)         │
+│  └── PG tsvector + pg_jieba 全文搜索   │
+│  MinIO / S3（文件/附件存储）            │
+│  Redis（缓存 + 队列 + 会话）            │
+└────────────────────────────────────────┘
+```
+
+## 补充研究
+后续可按需深入:
 - 安全审计(OWASP)专项
 - 无障碍(a11y)设计
-- Chinese full-text search with pg_jieba 具体实现方案
+- pg_jieba 中文分词实测
 - Canvas + Loro 数据绑定 PoC
 - 多租户 PostgreSQL 隔离策略
-- Loro + Axum WebSocket 集成实现细节
+- Formualizer 函数兼容性测试 (100 个高频公式)
 
 ## 核心架构总览
 ```
@@ -144,6 +168,7 @@ multi-table-research/
 │   ├── field-type-system.md                    # 字段类型系统(含自定义字段)
 │   ├── template-system-design.md               # 模板体系设计(产品对比)
 │   └── scenario-templates.md                   # 场景化模板设计(6大场景)
+│   └── mvp-scope-definition.md                 # MVP精确范围定义(V1目标/字段类型/视图/性能目标)
 │
 ├── tech-architecture/
 │   ├── notion-architecture.md                  # Notion架构概览
@@ -176,6 +201,11 @@ multi-table-research/
 │   └── architecture-decision-2026-04.md     # 架构决策记录(纯Rust后端+CRDT原生+SQLite方案)
 │   └── crdt-sqlite-deep-research.md        # CRDT+SQLite深度调研(Yrs能力/公式处理/跨表关联/AppFlowy架构/SQLite WAL性能)
 │   └── loro-postgresql-architecture-research.md # Loro+PostgreSQL+S3架构方案调研(Loro评估/loro-extended生态/PG Schema/对比分析)
+│   └── decision-review-critique.md           # 技术决策回顾审查(方法论问题/调研盲区/复合风险/流程建议)
+│   ├── decision-make-vs-buy.md               # 决策分析: Fork开源 vs 从零构建
+│   ├── decision-crdt-loro-vs-yjs.md          # 决策分析: CRDT选型 Loro vs Yjs
+│   ├── decision-backend-language.md          # 决策分析: 后端语言 NestJS vs Rust
+│   └── decision-formula-engine.md            # 决策分析: 公式引擎长期选型
 │
 ├── data-storage/
 │   ├── data-model-design.md                    # 数据模型设计(深度分析)
@@ -183,8 +213,15 @@ multi-table-research/
 │   ├── database-schema-detail.md               # 数据库Schema完整性(用户表/分区/乐观锁/迁移/索引生命周期/关联字段)
 │   └── file-based-arrow-storage.md             # 文件存储方案 & Apache Arrow/DuckDB-WASM技术路线
 │
+├── poc/
+│   ├── canvas-table-renderer/                 # PoC1: Canvas表格渲染(60FPS/10MB@20万行)
+│   ├── postgres-jsonb-bench/                  # PoC2: JSONB vs 物理表方案分析
+│   ├── formula-engine-bench/                  # PoC3: 公式引擎对比 (未实施)
+│   └── crdt-minimal-sync/                     # PoC4: CRDT同步Demo (未实施)
+│
 └── open-source-projects/
     ├── open-source-comparison.md               # 开源项目对比
     ├── apitable-detail.md                      # APITable详解
-    └── competitive-deep-analysis.md            # 竞品深度技术分析(Notion/飞书/APITable横向对比)
+    ├── competitive-deep-analysis.md            # 竞品深度技术分析(Notion/飞书/APITable横向对比)
+    └── simple-architecture-analysis.md        # 竞品简单架构分析(Grist/NocoDB/Baserow/Teable)
 ```
