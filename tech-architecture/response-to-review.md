@@ -122,6 +122,7 @@ HyperFormula 由 Handsontable 维护。Handsontable 的商业许可起价约 $79
 - notes.md 旧 Rust 架构图已删除
 - 文件索引 `└──` 乱用已修正
 - `poc/postgres-jsonb-bench` → `poc/postgres-jsonb-analysis`
-- mvp-scope-definition.md 技术原则将更新：从"能用乐观锁不引入 CRDT"改为区分可后换/不可后换决策
-- decision-crdt-loro-vs-yjs.md 将补充"选 Loro 不是因为协作需要"一节
-- decision-formula-engine.md 将补充 Plan B 和 HyperFormula 定价信息
+- mvp-scope-definition.md 技术原则已更新：从"能用乐观锁不引入 CRDT"改为区分可后换/不可后换决策
+- decision-crdt-loro-vs-yjs.md 已补充"选 Loro 不是因为协作需要"的说明
+- decision-formula-engine.md 已补充 Plan B 回退方案（IronCalc 服务端计算 / Fork 自维护），并明确仅接受 MIT/Apache-2.0 许可约束
+- decision-make-vs-buy.md 已补充 AGPL 许可约束对 Fork 方案的否决理由
