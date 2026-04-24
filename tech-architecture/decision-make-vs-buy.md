@@ -1,7 +1,9 @@
 # 决策分析：Fork 开源项目 vs 从零构建
 
 > 日期: 2026-04-24
-> 背景: 全功能多维表格产品，solo 开发
+> 背景: 全功能多维表格产品，solo 开发，VIBE CODING 模式
+>
+> **许可约束**: 仅使用 MIT/Apache-2.0 许可的项目。APITable 和 Teable 均为 AGPL-3.0，Fork 后衍生作品也须以 AGPL 许可发布。这对 VIBE CODING 的 solo 开发者是额外的法律负担——即使技术上可行，许可证约束也使 Fork 方案不具备可行性。
 
 ---
 
