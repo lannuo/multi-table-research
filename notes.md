@@ -122,35 +122,6 @@
 - 多租户 PostgreSQL 隔离策略
 - Formualizer 函数兼容性测试 (100 个高频公式)
 
-## 核心架构总览
-```
-┌────────────── 前端 ──────────────┐
-│  React + Next.js                 │
-│  Canvas表格渲染 / 虚拟滚动        │
-│  Formualizer公式引擎(WASM)        │
-│  loro-crdt + loro-extended/react  │
-├────────────── 后端 ──────────────┤
-│  Rust (Axum) — 统一后端          │
-│  ├── REST API（业务逻辑）         │
-│  ├── WebSocket（Loro CRDT同步）   │
-│  ├── Formualizer（原生Rust）      │
-│  ├── 自动化工作流引擎             │
-│  └── Webhook推送                  │
-├────────────── 数据层 ─────────────┤
-│  PostgreSQL（主存储）             │
-│  ├── 关系表：users/spaces/        │
-│  │   permissions/automations      │
-│  ├── CRDT快照/操作日志(BYTEA)     │
-│  └── PG tsvector + pg_jieba 全文搜索│
-│  MinIO / S3（文件/附件存储）      │
-│  热表CRDT状态：进程内存(LRU缓存)   │
-├────────────── 可选扩展 ───────────┤
-│  Redis（多实例/队列/广播时引入）   │
-│  Meilisearch（搜索增强）          │
-│  Citus（PG水平扩展）              │
-└──────────────────────────────────┘
-```
-
 ## 文件索引
 ```
 multi-table-research/
@@ -167,7 +138,7 @@ multi-table-research/
 │   ├── filter-system.md                        # 数据筛选系统设计
 │   ├── field-type-system.md                    # 字段类型系统(含自定义字段)
 │   ├── template-system-design.md               # 模板体系设计(产品对比)
-│   └── scenario-templates.md                   # 场景化模板设计(6大场景)
+│   ├── scenario-templates.md                   # 场景化模板设计(6大场景)
 │   └── mvp-scope-definition.md                 # MVP精确范围定义(V1目标/字段类型/视图/性能目标)
 │
 ├── tech-architecture/
@@ -195,18 +166,19 @@ multi-table-research/
 │   ├── auth-security-detail.md                 # 认证授权与安全设计(JWT/RLS/OWASP/加密/审计日志/分享安全)
 │   ├── automation-engine-detail.md             # 自动化引擎实现(n8n架构/BullMQ调度/错误重试/脚本沙箱/Temporal对比)
 │   ├── rust-engine-autosave.md                # 飞书Rust引擎 & 自动保存机制
-│   └── rust-ecosystem-research.md             # Rust生态系统调研(JSONB/OT/CRDT/WASM公式引擎/Web框架深度对比/Axum vs Actix vs Rocket vs Warp/NestJS对比)
-│   └── crdt-vs-ot-deep-research.md            # CRDT vs OT深度研究(结构化数据对比/Yjs-Yrs表格模型/Figma-AppFlowy案例/冲突解决/Rust集成/迁移路径/最终建议)
-│   └── rust-formula-engine-research.md       # Rust公式引擎深度调研(Formualizer/IronCalc/WASM可行性/HyperFormula许可证更正)
-│   └── architecture-decision-2026-04.md     # 架构决策记录(纯Rust后端+CRDT原生+SQLite方案)
-│   └── crdt-sqlite-deep-research.md        # CRDT+SQLite深度调研(Yrs能力/公式处理/跨表关联/AppFlowy架构/SQLite WAL性能)
-│   └── loro-postgresql-architecture-research.md # Loro+PostgreSQL+S3架构方案调研(Loro评估/loro-extended生态/PG Schema/对比分析)
-│   └── decision-review-critique.md           # 技术决策回顾审查(方法论问题/调研盲区/复合风险/流程建议)
+│   ├── rust-ecosystem-research.md             # Rust生态系统调研(JSONB/OT/CRDT/WASM公式引擎/Web框架深度对比/Axum vs Actix vs Rocket vs Warp/NestJS对比)
+│   ├── crdt-vs-ot-deep-research.md            # CRDT vs OT深度研究(结构化数据对比/Yjs-Yrs表格模型/Figma-AppFlowy案例/冲突解决/Rust集成/迁移路径/最终建议)
+│   ├── rust-formula-engine-research.md       # Rust公式引擎深度调研(Formualizer/IronCalc/WASM可行性/HyperFormula许可证更正)
+│   ├── architecture-decision-2026-04.md     # 架构决策记录(纯Rust后端+CRDT原生+SQLite方案)
+│   ├── crdt-sqlite-deep-research.md        # CRDT+SQLite深度调研(Yrs能力/公式处理/跨表关联/AppFlowy架构/SQLite WAL性能)
+│   ├── loro-postgresql-architecture-research.md # Loro+PostgreSQL+S3架构方案调研(Loro评估/loro-extended生态/PG Schema/对比分析)
+│   ├── decision-review-critique.md           # 技术决策回顾审查(方法论问题/调研盲区/复合风险/流程建议)
 │   ├── decision-make-vs-buy.md               # 决策分析: Fork开源 vs 从零构建
 │   ├── decision-crdt-loro-vs-yjs.md          # 决策分析: CRDT选型 Loro vs Yjs
 │   ├── decision-backend-language.md          # 决策分析: 后端语言 NestJS vs Rust
 │   ├── decision-formula-engine.md            # 决策分析: 公式引擎长期选型
-│   └── review-decision-docs.md               # 决策文档审查(残留问题/未消解张力/缺失文档)
+│   ├── review-decision-docs.md               # 决策文档审查(残留问题/未消解张力/缺失文档)
+│   └── response-to-review.md                 # 审查回应(张力解释/风险分级/时间线估算/修正清单)
 │
 ├── data-storage/
 │   ├── data-model-design.md                    # 数据模型设计(深度分析)
@@ -216,7 +188,7 @@ multi-table-research/
 │
 ├── poc/
 │   ├── canvas-table-renderer/                 # PoC1: Canvas表格渲染(60FPS/10MB@20万行)
-│   ├── postgres-jsonb-bench/                  # PoC2: JSONB vs 物理表方案分析
+│   ├── postgres-jsonb-analysis/               # PoC2: JSONB vs 物理表方案分析
 │   ├── formula-engine-bench/                  # PoC3: 公式引擎对比 (未实施)
 │   └── crdt-minimal-sync/                     # PoC4: CRDT同步Demo (未实施)
 │

@@ -109,11 +109,33 @@ SUM, IF, COUNT, AVERAGE, VLOOKUP, CONCATENATE, DATE, TODAY, LEFT, RIGHT, MID, TR
 **可能缺失的函数（需要验证）**：
 XLOOKUP, FILTER, SORT, UNIQUE, LAMBDA, LET, TEXTJOIN, IFS, SWITCH, RANDARRAY, SEQUENCE, STOCK
 
-**策略**：在 PoC 阶段用 100 个行业最常见的电子表格公式做兼容性测试，识别缺口。高频缺失的可以贡献给 Formualizer 上游或自行实现。
+**策略**：在写第一行业务代码之前，用 100 个高频公式做兼容性测试。通过率 ≥ 90% → 可用；< 90% → 触发 Plan B。
 
 ---
 
-## 五、结论
+## 五、Plan B 与风险缓解
+
+### 5.1 回退方案（按优先级）
+
+| 优先级 | 方案 | 代价 |
+|--------|------|------|
+| 1 | 贡献给 Formualizer 上游修复缺失函数 | 时间不确定，但最可持续 |
+| 2 | 服务端计算（IronCalc 或自定义 Python 公式引擎），前端展示结果 | 失去 WASM 前端计算的低延迟优势，弱网场景体验下降 |
+| 3 | **HyperFormula 商业许可** | 需要询价 |
+
+### 5.2 HyperFormula 商业化可能性
+
+HyperFormula 由 Handsontable 维护。Handsontable 商业许可起价约 **$790/developer/年**（2024 年定价参考，非精确报价）。
+
+**决策规则**：如果 HyperFormula 独立许可年费 < $2,000，且 Formualizer 公式测试通过率 < 90%，应直接购买 HyperFormula 许可。$2,000/年远低于自行修复 Formualizer 缺失函数 + 长期维护的时间成本（以 solo 开发者的有效时薪计算）。
+
+### 5.3 Handsontable 联系方式
+
+需要直接联系 Handsontable 销售获取 HyperFormula 的独立许可价格和条款：sales@handsontable.com。这个查询应在 Formualizer 公式测试完成前进行。
+
+---
+
+## 六、结论
 
 **选 Formualizer。** 核心逻辑：
 

@@ -104,7 +104,7 @@
 
 ### 3.3 技术原则
 
-1. **先简单后复杂**：能用 PostgreSQL 解决的不引入新组件，能用乐观锁的不引入 CRDT
+1. **区分可后换/不可后换决策**：CRDT（Loro）和公式引擎（Formualizer）渗透整个系统，后换成本极高——在 V1 一步到位。后端语言、UI 组件、部署方式等可以后换——先选最熟悉的。详见 `tech-architecture/response-to-review.md` 一.1 节
 2. **PoC 验证后决策**：关键技术选型（Canvas vs DOM、CRDT vs OT、Rust vs TS）必须有 PoC 数据支撑
 3. **架构预留，MVP 简化**：架构设计为百万行预留扩展点，但 MVP 实现可以有简化假设
 4. **Docker 一键部署**：降低私有化部署门槛
