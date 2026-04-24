@@ -53,62 +53,78 @@
 - [x] Local-First架构: DuckDB-WASM + IndexedDB/OPFS + CRDT同步的可行性
 - [x] CRDT vs OT 深度研究: 评估从OT切换到CRDT(Yjs+Yrs)的可行性，建议切换
 
+### 第六轮: CRDT 实施层深度研究
+- [x] Yrs CRDT 能力验证: 200K行+200列性能基准测试，GC策略分析
+- [x] 公式引擎深度调研: Formualizer/IronCalc/CALC 对比，Formualizer 推荐
+- [x] CRDT 中公式处理方案: 公式定义存 CRDT(LWW)，结果不存，事件驱动响应式计算
+- [x] 跨表关联在 CRDT 中的实现: 应用层存储关联记录 ID，参考 AppFlowy/Notion 模式
+- [x] AppFlowy 架构详细分析: 客户端 SQLite + 服务端 PostgreSQL + S3，AppFlowy-Collab 设计
+- [x] SQLite WAL 性能基准: 约 3351 写入/s，p99 <6ms，CRDT 场景足够
+- [x] Loro CRDT vs Yrs 深度对比: Map 操作快 65x，原生 MovableList/Shallow Snapshot/DAG
+- [x] 大文档分片策略: 按 table_id 分片+快照压缩+LRU 热表缓存
+- [x] Loro + PostgreSQL + S3 架构可行性: loro-extended PG 适配器已验证，Rust 集成方案
+- [x] 架构决策更新: 决策三 — CRDT Yrs→Loro，存储 SQLite→PostgreSQL+S3
+
 ## 已形成结论的技术决策
+
+> **重要**: 以下决策经过多轮深度技术调研后于 2026-04-24 更新。最新变更（决策三）：CRDT 从 Yrs 改为 Loro，存储从 SQLite 改为 PostgreSQL + S3。详见 `tech-architecture/architecture-decision-2026-04.md`。
 
 | 决策领域 | 结论 | 依据 |
 |---------|------|------|
-| 数据模型 | PostgreSQL + JSONB 分层架构 | 用户自定义字段 + 分析需求平衡 |
-| 实时协作 | CRDT(Yjs+Yrs)，Rust协作服务 | Rust无成熟OT库，Yrs生产验证(AppFlowy)，离线支持好 |
-| 公式引擎 | Formualizer (Rust+WASM) | MIT/Apache-2.0许可，320+公式，替代HyperFormula(实为GPLv3) |
-| 前端技术 | React + Next.js | APITable同方案，生态丰富 |
-| 后端技术 | NestJS (TypeScript) | 前后端统一语言，结构化强 |
-| 搜索 | PG原生→Meilisearch分阶段 | stringify字段+GIN索引起步 |
-| 版本控制 | Changeset + Snapshot | APITable方案 |
-| 自动化 | Trigger→Action事件驱动 | 比轮询实时性好 |
-| 权限 | PostgreSQL RLS + RBAC | 行列级安全 |
-| 部署 | 私有化Docker起步 | 公司内部使用优先 |
-| 扩展 | Citus + OLAP按需引入 | 按数据量级渐进 |
-| API | RESTful + WebSocket | APITable/Notion方案 |
-| UI组件 | Ant Design | 200+组件,企业级 |
+| 数据存储 | **Loro CRDT + PostgreSQL + S3** | Loro 是数据 source of truth，PG 存快照/操作日志/关系型元数据，S3 存附件；服务端 PG 生产验证优于 SQLite |
+| 实时协作 | **Loro CRDT** | Map 操作比 Yjs 快 65x，原生 MovableList 支持行列拖拽，Shallow Snapshot 内存优化，Eg-walker 算法 |
+| 公式引擎 | Formualizer (Rust+WASM) | MIT/Apache-2.0许可，320+公式；前端 WASM + 后端原生 Rust 直调 |
+| 前端技术 | React + Next.js + loro-extended/react | 生态丰富，Canvas 自研表格渲染，loro-extended 提供 useDocument/useValue/usePresence Hooks |
+| **后端技术** | **纯 Rust (Axum)** | 统一语言（协作+API+公式），单二进制部署，消除 TS/Rust 双栈维护成本 |
+| 搜索 | **PG tsvector + pg_jieba** | PostgreSQL 原生全文搜索，pg_jieba 中文分词，后续可加 Meilisearch |
+| 版本控制 | **Loro Git-like DAG** | 内建版本 DAG，Shallow Snapshot 压缩旧历史，无需自建快照轮转 |
+| 自动化 | Trigger→Action 事件驱动 | 比轮询实时性好 |
+| 权限 | **PG RLS + 应用层 RBAC** | PostgreSQL 行级安全策略 + Axum 中间件双层权限 |
+| 部署 | **Docker Compose (Axum + PG + MinIO)** | 一键部署，PG 提供成熟运维工具链 |
+| 扩展 | PG 读写分离 → Citus 水平扩展 | PostgreSQL 生态成熟，按需横向扩展 |
+| API | RESTful + WebSocket | REST 业务 API + WebSocket Loro 同步 |
+| UI组件 | Ant Design | 200+组件,企业级；表格自研 Canvas |
 | 测试 | Vitest + Playwright | 金字塔策略 |
 | 监控 | OTel + Prometheus + Grafana | 分阶段引入 |
-| AI | 云端LLM API起步 | 后期可本地部署 |
+| AI | 云端 LLM API 起步 | 后期可本地部署 |
 | 国际化 | react-i18next | 初期中文 |
 
 ## 全部研究方向已完成 ✓
 所有计划内方向均已覆盖。后续可按需深入:
-- 具体的数据库Schema DDL设计
-- 前端Canvas渲染引擎的详细实现
-- CRDT(Yjs+Yrs)的具体集成实现与PoC验证
 - 安全审计(OWASP)专项
 - 无障碍(a11y)设计
-- Rust生态系统深度评估（已有初版，见 rust-ecosystem-research.md，已新增 Web 框架深度对比）
-- Yjs文档模型与PostgreSQL持久化方案的详细设计
+- Chinese full-text search with pg_jieba 具体实现方案
+- Canvas + Loro 数据绑定 PoC
+- 多租户 PostgreSQL 隔离策略
+- Loro + Axum WebSocket 集成实现细节
 
 ## 核心架构总览
 ```
-┌──────────── 前端 ────────────┐
-│  React + Next.js             │
-│  Canvas表格渲染 / 虚拟滚动    │
-│  Formualizer公式引擎(WASM)    │
-│  Yjs CRDT客户端              │
-├──────────── API层 ───────────┤
-│  Rust (Axum + Yrs) 协作服务  │
-│  NestJS (TypeScript) 业务API │
-│  自动化工作流引擎             │
-│  Webhook推送                  │
-├──────────── 数据层 ───────────┤
-│  PostgreSQL (JSONB)          │
-│  ├── 元数据 (tables/fields)  │
-│  ├── 记录 (records+data)     │
-│  ├── 协作 (CRDT更新+快照)    │
-│  └── 分区 / Citus扩展        │
-│  Redis (缓存+队列+活跃文档)   │
-├──────────── 可选扩展 ─────────┤
-│  Meilisearch (全文搜索)       │
-│  ClickHouse (OLAP分析)       │
-│  MinIO (文件存储)             │
-└──────────────────────────────┘
+┌────────────── 前端 ──────────────┐
+│  React + Next.js                 │
+│  Canvas表格渲染 / 虚拟滚动        │
+│  Formualizer公式引擎(WASM)        │
+│  loro-crdt + loro-extended/react  │
+├────────────── 后端 ──────────────┤
+│  Rust (Axum) — 统一后端          │
+│  ├── REST API（业务逻辑）         │
+│  ├── WebSocket（Loro CRDT同步）   │
+│  ├── Formualizer（原生Rust）      │
+│  ├── 自动化工作流引擎             │
+│  └── Webhook推送                  │
+├────────────── 数据层 ─────────────┤
+│  PostgreSQL（主存储）             │
+│  ├── 关系表：users/spaces/        │
+│  │   permissions/automations      │
+│  ├── CRDT快照/操作日志(BYTEA)     │
+│  └── PG tsvector + pg_jieba 全文搜索│
+│  MinIO / S3（文件/附件存储）      │
+│  热表CRDT状态：进程内存(LRU缓存)   │
+├────────────── 可选扩展 ───────────┤
+│  Redis（多实例/队列/广播时引入）   │
+│  Meilisearch（搜索增强）          │
+│  Citus（PG水平扩展）              │
+└──────────────────────────────────┘
 ```
 
 ## 文件索引
@@ -157,6 +173,9 @@ multi-table-research/
 │   └── rust-ecosystem-research.md             # Rust生态系统调研(JSONB/OT/CRDT/WASM公式引擎/Web框架深度对比/Axum vs Actix vs Rocket vs Warp/NestJS对比)
 │   └── crdt-vs-ot-deep-research.md            # CRDT vs OT深度研究(结构化数据对比/Yjs-Yrs表格模型/Figma-AppFlowy案例/冲突解决/Rust集成/迁移路径/最终建议)
 │   └── rust-formula-engine-research.md       # Rust公式引擎深度调研(Formualizer/IronCalc/WASM可行性/HyperFormula许可证更正)
+│   └── architecture-decision-2026-04.md     # 架构决策记录(纯Rust后端+CRDT原生+SQLite方案)
+│   └── crdt-sqlite-deep-research.md        # CRDT+SQLite深度调研(Yrs能力/公式处理/跨表关联/AppFlowy架构/SQLite WAL性能)
+│   └── loro-postgresql-architecture-research.md # Loro+PostgreSQL+S3架构方案调研(Loro评估/loro-extended生态/PG Schema/对比分析)
 │
 ├── data-storage/
 │   ├── data-model-design.md                    # 数据模型设计(深度分析)
