@@ -205,7 +205,8 @@ multi-table-research/
 │   ├── decision-make-vs-buy.md               # 决策分析: Fork开源 vs 从零构建
 │   ├── decision-crdt-loro-vs-yjs.md          # 决策分析: CRDT选型 Loro vs Yjs
 │   ├── decision-backend-language.md          # 决策分析: 后端语言 NestJS vs Rust
-│   └── decision-formula-engine.md            # 决策分析: 公式引擎长期选型
+│   ├── decision-formula-engine.md            # 决策分析: 公式引擎长期选型
+│   └── review-decision-docs.md               # 决策文档审查(残留问题/未消解张力/缺失文档)
 │
 ├── data-storage/
 │   ├── data-model-design.md                    # 数据模型设计(深度分析)
