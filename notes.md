@@ -166,5 +166,6 @@ multi-table-research/
 │
 └── open-source-projects/
     ├── open-source-comparison.md               # 开源项目对比
-    └── apitable-detail.md                      # APITable详解
+    ├── apitable-detail.md                      # APITable详解
+    └── competitive-deep-analysis.md            # 竞品深度技术分析(Notion/飞书/APITable横向对比)
 ```
